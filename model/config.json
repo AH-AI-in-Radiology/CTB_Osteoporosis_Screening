@@ -1,0 +1,24 @@
+{
+    "model_name": "seresnet18",
+    "dropout": 0.3,
+    "osteo_screen": false,
+    "additional_features": 2,
+    "pretrained": false,
+    "sep_metadata_layer": true,
+    "activation": "sigmoid",
+    "input_size": [
+        512,
+        512
+    ],
+    "norm_stats": {
+        "image": {
+        "mean": -600.616,
+        "std": 666.803
+        },
+        "age": {
+            "mean": 69.579,
+            "std": 14.937
+        }
+    },
+    "threshold": 0.68
+}
