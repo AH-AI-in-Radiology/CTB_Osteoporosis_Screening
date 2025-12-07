@@ -4,11 +4,11 @@ from typing import Literal
 import numpy as np
 import pydicom
 import torch
+from pathlib import Path
 
 from monai.transforms import Resize, ResizeWithPadOrCrop
 
 from models import FE_Additional
-
 
 def load_config(config_path: str) -> dict:
     """
@@ -90,22 +90,30 @@ def create_metadata_tensor(
     metadata = metadata.to(device)  # Move to the specified device
     return metadata
 
-
-def load_slices(slice_paths: list[str]) -> list[np.array]:
+def load_slices(dir_path: str) -> list[np.array]:
     """
-    Load DICOM slices from the specified paths.
+    Load DICOM slices from the specified directory and sort them.
 
     Args:
-        slice_paths (list[str]): List of paths to the DICOM slices.
+        dir_path (str): Path to the directory containing the DICOM slices.
 
     Returns:
         list[np.array]: List of loaded DICOM slices.
     """
 
+    # Get the slice file paths
+    slice_paths = sorted(Path(dir_path).glob("*.dcm"))
+    if len(slice_paths) == 0:
+        raise ValueError(f"No DICOM files found in directory: {dir_path}")
+
+    # Load the slices
     slices = []
     for path in slice_paths:
         ct_slice = pydicom.dcmread(path)
         slices.append(ct_slice)
+
+    # Sort slices by InstanceNumber to ensure correct order
+    slices.sort(key=lambda x: int(x.InstanceNumber))
 
     return slices
 
@@ -149,23 +157,6 @@ def window(
     return slices
 
 
-def tensor_stack(slices: list[np.array], device: torch.device) -> torch.Tensor:
-    """
-    Convert a list of numpy arrays to a list of PyTorch tensors.
-
-    Args:
-        slices (list[np.array]): List of numpy arrays to be converted.
-        device (torch.device): Device to place the tensors on (e.g., 'cuda' or 'cpu').
-
-    Returns:
-        list[torch.Tensor]: List of PyTorch tensors.
-    """
-
-    slices = torch.tensor(np.stack(slices, axis=0), dtype=torch.float32)
-    slices = slices.to(device)  # Move to the specified device
-    return slices
-
-
 def zoom_resize(slices: torch.Tensor, dims: tuple[int, int]) -> torch.Tensor:
     """
     Resize slices to the specified dimensions.
@@ -204,3 +195,90 @@ def normalise_slices(slices: torch.Tensor, mean: float, std: float) -> torch.Ten
         )
 
     return (slices - mean) / std
+
+
+def create_channels(slices: torch.Tensor) -> torch.Tensor:
+    """
+    Take a tensor of slices and create a 3-channel tensor with overlapping slices.
+
+    Args:
+        slices (torch.Tensor): Tensor of slices to be converted.
+
+    Returns:
+        torch.Tensor: Tensor containing the 3-channel overlapping slices with shape (batch, 3, 512, 512).
+    """
+
+    # Create three channels that are overlapping slices
+    slices = slices.unfold(0, size=3, step=1)
+    # Reshape to (batch, 3, 512, 512)
+    slices = slices.reshape(-1, 3, 512, 512)
+    return slices
+
+
+def calculate_optimal_slice(mask: np.array) -> int:
+    """
+    Calculate the optimal slice index above the lateral ventricles based on segmentation data.
+
+    Args:
+        mask (np.array): 3D numpy array where each slice corresponds to a segmentation mask
+            generated from a CT scan.
+    Returns:
+        int: The index of the optimal slice above the lateral ventricles.
+    """
+
+    # Count the number of pixels in each slice corresponding with label 10
+    # (ventricular system)
+    pixel_count = np.zeros((len(mask)))
+    for i, array in enumerate(mask):
+        pixel_count[i] = np.sum(array == 10)
+
+    max_pixel_count_index = np.argmax(pixel_count)
+
+    # Define a slice limit to to stop looking
+    # Defined as 1/5 of the series length from the slice with highest pixel
+    # count corresponding with the ventricular system
+    sequence_length = len(pixel_count)
+    window_size = int(sequence_length * 0.2)
+    window_end = max_pixel_count_index + window_size
+    # Ensure the window doesn't exceed the bounds of the entire scan
+    window_end = min(window_end, sequence_length)
+
+    # Identify the minimum value in the defined window
+    min_val = min(pixel_count[max_pixel_count_index:window_end])
+
+    # Set the threshold value of to be 5% of the max pixel count
+    threshold_value = pixel_count[max_pixel_count_index] / 20
+
+    # Adjust the window end to not exceed the array bounds
+    adjusted_window_end = min(max_pixel_count_index + window_size, len(pixel_count))
+
+    if min_val <= threshold_value:
+        # Look for the first value below 1/20 of the max value within the window
+        for idx in range(max_pixel_count_index, adjusted_window_end):
+            if pixel_count[idx] < threshold_value:
+                optimal_slice_idx = idx
+                break
+    else:
+        # Catch situation where all pixel counts are above threshold in the window
+        optimal_slice_idx = max_pixel_count_index + np.argmin(
+            pixel_count[max_pixel_count_index:window_end]
+        )
+
+    return optimal_slice_idx
+
+
+def extract_optimal_range(slices: np.array, optimal_slice_idx: int) -> np.array:
+    """
+    Extract a range of slices around the optimal slice index.
+
+    Args:
+        slices (np.array): 3D numpy array where each slice corresponds to a CT scan slice.
+        optimal_slice_idx (int): The index of the optimal slice above the lateral ventricles.
+    Returns:
+        np.array: 3D numpy array containing the extracted range of slices.
+    """
+
+    start_idx = max(0, optimal_slice_idx - 6)
+    end_idx = min(len(slices) - 1, optimal_slice_idx + 6)
+
+    return slices[start_idx:end_idx]

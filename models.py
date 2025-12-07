@@ -39,6 +39,9 @@ class FE_Additional(nn.Module):
 
         super().__init__()
 
+        # Save the device
+        self.device = device
+
         # If we have two classes, we can use a single output neuron with sigmoid activation
         self.additional_features = additional_features
         self.output_dims = 1
@@ -52,7 +55,7 @@ class FE_Additional(nn.Module):
         # Load the base model
         self.fe = timm.create_model(
             model_name, pretrained=pretrained, num_classes=0
-        ).to(device)  # Set num_classes to 0 to use as a feature extractor
+        ).to(self.device)  # Set num_classes to 0 to use as a feature extractor
 
         # Feature size depends on the base model, need to adjust this based on the specific architecture
         feature_size = self._get_feature_size(model_name)
@@ -68,14 +71,14 @@ class FE_Additional(nn.Module):
                 nn.BatchNorm1d(512),
                 nn.ReLU(),
                 nn.Dropout(dropout),
-            ).to("cuda")
+            ).to(self.device)
             self.additional_layers = nn.Sequential(
                 nn.Linear(feature_size + 512, 512),
                 nn.BatchNorm1d(512),
                 nn.ReLU(),
                 nn.Dropout(dropout),
                 nn.Linear(512, self.output_dims),
-            ).to("cuda")
+            ).to(self.device)
         else:
             self.additional_layers = nn.Sequential(
                 nn.Linear(
@@ -86,7 +89,7 @@ class FE_Additional(nn.Module):
                 nn.ReLU(),
                 nn.Dropout(dropout),
                 nn.Linear(512, self.output_dims),
-            ).to("cuda")
+            ).to(self.device)
 
         self.sigmoid_func = nn.Sigmoid()
 
@@ -124,7 +127,7 @@ class FE_Additional(nn.Module):
         combined_features = torch.cat(feature_list, dim=1)
 
         # Pass through additional layers
-        output = self.additional_layers(combined_features.to("cuda"))
+        output = self.additional_layers(combined_features.to(self.device))
         # Apply activation function if needed
         if self.activation == "sigmoid":
             output = self.sigmoid_func(output)
@@ -134,11 +137,11 @@ class FE_Additional(nn.Module):
     def _get_feature_size(self, model_name):
         # Create a dummy input tensor. The size should match your input image size.
         # For example, if your input images are 512x512 with 3 channels, the dummy input would be:
-        dummy_input = torch.zeros(1, 3, 512, 512).to("cuda")
+        dummy_input = torch.zeros(1, 3, 512, 512).to(self.device)
 
         # Create a temporary model instance
         temp_model = timm.create_model(model_name, pretrained=False, num_classes=0).to(
-            "cuda"
+            self.device
         )
 
         # Pass the dummy input through the model

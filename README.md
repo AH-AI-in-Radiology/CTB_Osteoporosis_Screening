@@ -1,6 +1,6 @@
 # Automated screening of osteoporosis from non-contrast CT brain imaging
 
-**Paper**: [paper citation here]
+**Paper**: pending publication
 
 This repository contains a pre-trained model for osteoporosis screening using non-contrast CT brain imaging. The methodology used a Convolutional Neural Network (CNN), specifically seresnet18, to classify CT images. The model takes as a slice, the slice above it and the slice below it, along with the patient's age and sex. The model is trained on 12 slices centred around the slice above the lateral ventricles. The model is designed to classify the input into two classes: "Normal" and "Osteoporosis or Osteopenia".
 
@@ -12,7 +12,9 @@ This repository contains a pre-trained model for osteoporosis screening using no
 - `models/`: Directory containing the model configuration and weights (download instructions below)
   - `config.yaml`: Configuration file for the model
   - `model.pt`: Pre-trained model weights
-- `data/`: Directory containing sample CT images for testing the model
+- `data/`: Directory where the data should be places
+  - `scans/`: Directory where all the CT Scans should be placed
+  - `masks/`: Directory where all the segemented masks should be placed
 
 ## Quick Start
 
@@ -29,15 +31,19 @@ This repository contains a pre-trained model for osteoporosis screening using no
 
 1. Navigate to the **Releases** section of this GitHub repository.
 2. Select the desired release version.
-3. Download the `config.yaml` and `model.pt` files.
-4. Place these files in the `models/` directory of this repository.
-5. Ensure the directory structure looks like this:
+3. Download the desired model artifacts and rename it to `model.pt`.
+4. Place `model.pt` in the `models/` directory of this repository.
+5. Place your dicom files in the `data/scans/` directory.
+6. Generate the brain segmentation using the instruction provided [here](https://jasonccai.github.io/HeadCTSegmentation/).
+7. Ensure the directory structure looks like this:
    ```
    osteoporosis_ct/
    ├── models/
    │   ├── config.yaml
    │   └── model.pt
    ├── data/
+   │   ├── scans/
+   │   └── masks/
    ├── demo.ipynb
    ├── models.py
    └── utils.py
