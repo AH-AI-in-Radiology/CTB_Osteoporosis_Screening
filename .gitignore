@@ -131,5 +131,5 @@ dmypy.json
 # Model files - exclude .pt files in model folder
 model/*.pt
 
-# Data folder
-data/
+# Ignore DICOM files
+*.dcm
