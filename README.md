@@ -1,16 +1,16 @@
-# Automated screening of osteoporosis from non-contrast CT brain imaging
+# Automated opportunistic screening for low bone mineral density using routine CT brain imaging
 
 **Paper**: pending publication
 
-This repository contains pre-trained models and a workflow for osteoporosis and low BMD (Bone Mineral Density) screening using non-contrast CT brain imaging. The methodology used a Convolutional Neural Network (CNN), specifically seresnet18, to classify CTB imaging. 
+This repository contains pre-trained models and a workflow for low BMD (Bone Mineral Density) and osteoporosis screening using non-contrast CT brain imaging. The methodology used a Convolutional Neural Network (CNN), specifically seresnet18, to classify CTB imaging. 
 
 Classification occurs in a 2 step process:
 1. Identification of the slice above the lateral ventricles using this [model](https://jasonccai.github.io/HeadCTSegmentation/).
 2. Performing classification with 12 slices centered on the slice identified in '1' together with age and sex
 
 There are two models which each address a different screening scenario:
-1. Osteoporosis BMD screening (T <= -2.5 is labelled 1, and T > -2.5 is labelled 0)
-2. Low BMD screening (T < -1.0 is labelled 1, and T >= -1.0 is labelled 0)
+1. Low BMD screening (T < -1.0 is labelled 1, and T >= -1.0 is labelled 0)
+2. Osteoporosis BMD screening (T <= -2.5 is labelled 1, and T > -2.5 is labelled 0)
 
 ## Repository Structure
 
