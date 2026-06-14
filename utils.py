@@ -278,7 +278,12 @@ def extract_optimal_range(slices: np.array, optimal_slice_idx: int) -> np.array:
         np.array: 3D numpy array containing the extracted range of slices.
     """
 
-    start_idx = max(0, optimal_slice_idx - 6)
-    end_idx = min(len(slices) - 1, optimal_slice_idx + 6)
+    n = len(slices)
+    window = 12
+
+    start_idx = optimal_slice_idx - 6
+    start_idx = max(0, min(start_idx, n - window))
+
+    end_idx = start_idx + window
 
     return slices[start_idx:end_idx]
