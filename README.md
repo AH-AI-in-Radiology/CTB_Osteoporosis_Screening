@@ -14,12 +14,12 @@ There are two models which each address a different screening scenario:
 
 ## Repository Structure
 
-- `models.py`: Contains the model architecture
-- `utils.py`: Contains utility functions for data preprocessing and model loading
+- `models.py`: Model architecture
+- `utils.py`: Utility functions for data preprocessing and model loading, including slice selection
 - `demo.ipynb`: Demonstrates the original sample-data workflow.
 - `demo_nii.ipynb`: Demonstrates inference using NIfTI (`.nii` / `.nii.gz`) CT brain volumes and masks.
 - `models/`: Directory containing the model configuration and weights (download instructions below)
-  - `config.yaml`: Configuration file for the model
+  - `config.json`: Configuration file for the model
   - `model.pt`: Pre-trained model weights
 - `data/`: Directory where the data should be places
   - `scans/`: Directory where all the CT Scans should be placed
@@ -48,7 +48,7 @@ There are two models which each address a different screening scenario:
    ```
    osteoporosis_ct/
    ├── model/
-   │   ├── config.yaml
+   │   ├── config.json
    │   └── model.pt
    ├── data/
    │   ├── scans/
