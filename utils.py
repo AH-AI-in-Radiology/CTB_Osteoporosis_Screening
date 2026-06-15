@@ -8,7 +8,6 @@ import torch
 from pathlib import Path
 
 from monai.transforms import Resize, ResizeWithPadOrCrop
-
 from models import FE_Additional
 
 def load_nifti_volume(path: str) -> np.ndarray:
@@ -29,7 +28,6 @@ def load_nifti_volume(path: str) -> np.ndarray:
     arr = np.moveaxis(arr, -1, 0)
     return arr
 
-
 def load_nifti_mask(path: str) -> np.ndarray:
     """
     Load a NIfTI segmentation mask.
@@ -47,8 +45,6 @@ def load_nifti_mask(path: str) -> np.ndarray:
     arr = np.moveaxis(arr, -1, 0)
     return arr
 
-
-
 def load_config(config_path: str) -> dict:
     """
     Load the model configuration from a JSON file.
@@ -62,7 +58,6 @@ def load_config(config_path: str) -> dict:
     with open(config_path, "r") as f:
         config = json.load(f)
     return config
-
 
 def load_model(config: dict, model_path: str, device: torch.device) -> FE_Additional:
     """
@@ -92,7 +87,6 @@ def load_model(config: dict, model_path: str, device: torch.device) -> FE_Additi
     model.load_state_dict(torch.load(model_path, map_location=device)[0])
 
     return model
-
 
 def create_metadata_tensor(
     age: int,
@@ -172,7 +166,6 @@ def transform_to_hu(slices: list[np.array]) -> list[np.array]:
         pydicom.pixel_data_handlers.apply_modality_lut(slice_.pixel_array, slice_)
         for slice_ in slices
     ]
-
 
 def window(
     slices: list[np.array], window_center: int, window_width: int
