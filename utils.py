@@ -3,12 +3,51 @@ from typing import Literal
 
 import numpy as np
 import pydicom
+import nibabel as nib
 import torch
 from pathlib import Path
 
 from monai.transforms import Resize, ResizeWithPadOrCrop
 
 from models import FE_Additional
+
+def load_nifti_volume(path: str) -> np.ndarray:
+    """
+    Load a NIfTI CT volume as a numpy array.
+
+    Returns shape expected by the rest of the pipeline:
+    (num_slices, height, width)
+    """
+    img = nib.load(path)
+    img = nib.as_closest_canonical(img)
+    arr = img.get_fdata().astype(np.float32)
+
+    # Brainseg stores as (H, W, Z). Convert to (Z, H, W)
+    if arr.ndim != 3:
+        raise ValueError(f"Expected 3D NIfTI volume, got shape {arr.shape}")
+
+    arr = np.moveaxis(arr, -1, 0)
+    return arr
+
+
+def load_nifti_mask(path: str) -> np.ndarray:
+    """
+    Load a NIfTI segmentation mask.
+
+    Returns shape:
+    (num_slices, height, width)
+    """
+    img = nib.load(path)
+    img = nib.as_closest_canonical(img)
+    arr = img.get_fdata().astype(np.uint16)
+
+    if arr.ndim != 3:
+        raise ValueError(f"Expected 3D NIfTI mask, got shape {arr.shape}")
+
+    arr = np.moveaxis(arr, -1, 0)
+    return arr
+
+
 
 def load_config(config_path: str) -> dict:
     """

@@ -16,7 +16,8 @@ There are two models which each address a different screening scenario:
 
 - `models.py`: Contains the model architecture
 - `utils.py`: Contains utility functions for data preprocessing and model loading
-- `demo.ipynb`: Jupyter notebook for running the model on sample data
+- `demo.ipynb`: Demonstrates the original sample-data workflow.
+- `demo_nii.ipynb`: Demonstrates inference using NIfTI (`.nii` / `.nii.gz`) CT brain volumes and masks.
 - `models/`: Directory containing the model configuration and weights (download instructions below)
   - `config.yaml`: Configuration file for the model
   - `model.pt`: Pre-trained model weights
@@ -40,19 +41,20 @@ There are two models which each address a different screening scenario:
 1. Navigate to the **Releases** section of this GitHub repository.
 2. Select the desired release version.
 3. Download the desired model artifacts and rename it to `model.pt`.
-4. Place `model.pt` in the `models/` directory of this repository.
+4. Place `model.pt` in the `model/` directory of this repository.
 5. Place your dicom files in the `data/scans/` directory.
 6. Generate the brain segmentation using the instruction provided [here](https://jasonccai.github.io/HeadCTSegmentation/).
 7. Ensure the directory structure looks like this:
    ```
    osteoporosis_ct/
-   ├── models/
+   ├── model/
    │   ├── config.yaml
    │   └── model.pt
    ├── data/
    │   ├── scans/
    │   └── masks/
    ├── demo.ipynb
+   ├── demo_nii.ipynb
    ├── models.py
    └── utils.py
    ```
@@ -60,7 +62,19 @@ There are two models which each address a different screening scenario:
 ### Running the Demo
 
 1. Open the `demo.ipynb` notebook in Jupyter or any compatible notebook environment.
-2. Run the cells sequentially to load the model and test it on sample CT images.
+2. Run the cells sequentially to load the model and test it on sample CT images in DICOM format.
+
+### Running the NIfTI Demo
+
+The `demo_nii.ipynb` notebook demonstrates how to run the model on NIfTI (`.nii` / `.nii.gz`) CT brain volumes with corresponding segmentation masks.
+
+Example NIfTI images and masks (without age or sex data) can be downloaded from the [`jasonccai/HeadCTSegmentation`](https://github.com/jasonccai/HeadCTSegmentation) repository and placed in this repository's `data/scans/` and `data/masks/` folders, respectively.
+
+Open `demo_nii.ipynb` and run the cells sequentially to preprocess the NIfTI inputs and generate model predictions. Ensure that each scan and mask correspond to the same case, and apply any reorientation or preprocessing consistently to both.
+
+### Orientation note
+
+The model is intended to receive axial CT brain images displayed with the patient's anterior direction / nose pointing upward. During training, rotational augmentation of up to ±90 degrees was used, so the model is expected to tolerate a range of in-plane rotations. Nevertheless, nose-up orientation is the preferred input convention, and markedly rotated scans should ideally be reoriented during preprocessing, with scans and masks transformed consistently.
 
 ## Contributing
 
