@@ -1,8 +1,12 @@
 # Automated opportunistic screening for low bone mineral density using routine CT brain imaging
 
-**Paper**: Zhang R et al. Automated opportunistic screening for low bone mineral density using routine CT brain imaging. Front. Radiol. 2026; 6:1901958.
+Zhang R et al. Automated opportunistic screening for low bone mineral density using routine CT brain imaging. Front. Radiol. 2026; 6:1901958.
 
 This repository contains pre-trained models and a workflow for low BMD (Bone Mineral Density) and osteoporosis screening using non-contrast CT brain imaging. The methodology used a Convolutional Neural Network (CNN), specifically seresnet18, to classify CTB imaging. 
+
+If you find this repository helpful please cite the following paper:
+
+Zhang R, Panchal N, Choong H, Ding C, Huang H, Kachel S, Chiang C, Kutaiba N and Lim RP (2026) Automated opportunistic screening for low bone mineral density using routine CT brain imaging. Front. Radiol. 6:1901958. doi: 10.3389/fradi.2026.1901958
 
 Classification occurs in a 2 step process:
 1. Identification of the slice above the lateral ventricles using this [model](https://jasonccai.github.io/HeadCTSegmentation/).
